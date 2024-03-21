@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://bulma.io/vendor/fontawesome-free-5.15.2-web/css/all.min.css">
+  <link rel="stylesheet" href="https://bulma.io/css/bulma-docs.min.css?v=202403060845">
+</head>
+
+
+  
+<body>
+
+
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-8">
+                    <div class="content">
+                        <table class="table is-striped" id="container_status_table">
+                            <tr>
+                                <th> <span class="icon bd-link-icon">
+                        <i class="fab fa-wpforms"></i>
+                    </span>名字</th>
+                                <td>{{ vps_status.vmid }}:{{ vps_status.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>
+                                                       <span class="icon bd-link-icon">
+                        <i class="fas fa-tools"></i>
+                    </span> 状态
+                                    {% if vps_status.status == "running" %}
+                                    <form id="stop_form" action="{% url 'stop_vps' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="vm_id" value="{{ vps_status.vmid }}">
+                                        <button type="button" onclick="toggleButton('stop_form')" class="button is-danger is-small" id="stop_button">关机</button>
+                                    </form>
+                                    {% else %}
+                                    <form id="start_form" action="{% url 'start_vps' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="vm_id" value="{{ vps_status.vmid }}">
+                                        <button type="button" onclick="toggleButton('start_form')" class="button is-success is-small" id="start_button">开机</button>
+                                    </form>
+                                    {% endif %}
+                                </th>
+                                <td id="status_cell">{{ vps_status.status }}（{{ vps_status.uptime }}）</td>
+                            </tr>
+                            <tr>
+                                <th>                    <span class="icon bd-link-icon">
+                        <i class="fas fa-cube"></i>
+                    </span>CPU情况: {{ vps_status.cpus }} cores</th>
+                                <td id="cpu_usage_cell">
+                                    <progress class="progress is-info" value="{{ vps_status.cpu }}" max="100">{{ vps_status.cpu }}</progress>
+                                </td>
+                            </tr>
+                            <tr>
+                               <th><span class="icon bd-link-icon">
+                        <i class="fas fa-cubes"></i>
+                    </span><span  id="mem_cell">内存情况: {{ vps_status.mem }} / {{ vps_status.maxmem }}</span></th>
+                                <td id="mem_usage_cell">
+                                    <progress class="progress is-info" value="{{ vps_status.mem_usage_percentage }}" max="100">{{ vps_status.mem_usage_percentage }}%</progress>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>                    <span class="icon bd-link-icon">
+                        <i class="fas fa-columns"></i>
+                    </span>硬盘情况: {{ vps_status.disk }} / {{ vps_status.maxdisk }}</th>
+                                <td id="disk_usage_cell">
+                                    <progress class="progress is-info" value="{{ vps_status.disk_usage_percentage }}" max="100">{{ vps_status.disk_usage_percentage }}%</progress>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>                    <span class="icon bd-link-icon">
+                        <i class="fas fa-warehouse"></i>
+                    </span>网络情况:</th>
+                                <td id="net_cell">{{ vps_status.net }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+<script>
+  
+        function toggleButton(formId) {
+            var form = document.getElementById(formId);
+            var button = form.querySelector('button');
+            button.classList.add('is-loading');
+            setTimeout(function() {
+                form.submit();
+            }, 1000); 
+        }
+  
+       function updateData() {
+    // 获取vmid
+    var vmid = "{{ vps_status.vmid }}"; 
+    
+    // 发送AJAX请求以获取最新数据
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/update_data/?vmid=' + vmid, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                // 解析响应数据
+                var data = JSON.parse(xhr.responseText);
+                
+                // 更新状态信息单元格
+                var statusCell = document.getElementById('status_cell');
+                if (statusCell) {
+                    statusCell.textContent = data.status + ' (' + data.uptime + ')';
+                }
+                // 更新状态信息单元格
+                var statusCell = document.getElementById('net_cell');
+                if (statusCell) {
+                    statusCell.textContent = data.net;
+                }
+                // 更新状态信息单元格
+                var statusCell = document.getElementById('mem_cell');
+                if (statusCell) {
+                    statusCell.textContent = '内存情况: ' + data.mem + ' / '+ data.maxmem;
+                }
+                // 更新CPU使用情况
+                var cpuCell = document.getElementById('cpu_usage_cell');
+                if (cpuCell) {
+                    var progressBar = cpuCell.querySelector('progress');
+                    if (progressBar) {
+                        progressBar.value = data.cpu;
+                        progressBar.textContent = data.cpu + '%';
+                        // 根据数值改变颜色
+                        if (data.cpu < 50) {
+                            progressBar.classList.remove("is-warning", "is-danger", "is-info");
+                            progressBar.classList.add("is-success");
+                        } else if (data.cpu >= 50 && data.cpu < 75) {
+                            progressBar.classList.remove("is-success", "is-danger", "is-info");
+                            progressBar.classList.add("is-warning");
+                        } else {
+                            progressBar.classList.remove("is-success", "is-warning", "is-info");
+                            progressBar.classList.add("is-danger");
+                        }
+                    }
+                }
+              
+                // 更新硬盘使用情况
+                var cpuCell = document.getElementById('disk_usage_cell');
+                if (cpuCell) {
+                    var progressBar = cpuCell.querySelector('progress');
+                    if (progressBar) {
+                        progressBar.value = data.disk_usage_percentage;
+                        progressBar.textContent = data.disk_usage_percentage + '%';
+                        // 根据数值改变颜色
+                        if (data.disk_usage_percentage < 50) {
+                            progressBar.classList.remove("is-warning", "is-danger", "is-info");
+                            progressBar.classList.add("is-success");
+                        } else if (data.disk_usage_percentage >= 50 && data.cpu < 75) {
+                            progressBar.classList.remove("is-success", "is-danger", "is-info");
+                            progressBar.classList.add("is-warning");
+                        } else {
+                            progressBar.classList.remove("is-success", "is-warning", "is-info");
+                            progressBar.classList.add("is-danger");
+                        }
+                    }
+                }
+              
+                // 更新内存使用情况
+                var memCell = document.getElementById('mem_usage_cell');
+                if (memCell) {
+                    var progressBar = memCell.querySelector('progress');
+                    if (progressBar) {
+                        progressBar.value = data.mem_usage_percentage;
+                        progressBar.textContent = data.mem_usage_percentage + '%';
+                        // 根据数值改变颜色
+                        if (data.mem_usage_percentage < 50) {
+                            progressBar.classList.remove("is-warning", "is-danger", "is-info");
+                            progressBar.classList.add("is-success");
+                        } else if (data.mem_usage_percentage >= 50 && data.mem_usage_percentage < 75) {
+                            progressBar.classList.remove("is-success", "is-danger", "is-info");
+                            progressBar.classList.add("is-warning");
+                        } else {
+                            progressBar.classList.remove("is-success", "is-warning", "is-info");
+                            progressBar.classList.add("is-danger");
+                        }
+                    }
+                }
+            } else {
+                console.error('请求失败:', xhr.status);
+            }
+        }
+    };
+    xhr.send();
+}
+
+
+setInterval(updateData, 1000);
+
+</script>
+ 
+
+</body>
+</html>

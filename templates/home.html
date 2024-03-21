@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+  <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://bulma.io/vendor/fontawesome-free-5.15.2-web/css/all.min.css">
+  <link rel="stylesheet" href="https://bulma.io/css/bulma-docs.min.css?v=202403060845">
+</head>
+</head>
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title">欢迎, {{ user.username }}!</h1>
+          <br>
+          <li class="box">
+              <div class="content">
+                  <p><strong>余额:</strong> {{ user.balance }}</p>
+              </div>
+              <a href="#" class="button is-primary">充值</a>
+          </li>
+            <h2 class="subtitle">你的主机清单:</h2>
+            <ul>
+                {% for user_vps in user_vps %}
+                    <li class="box">
+                        <div class="content">
+                            <p><strong>主机 ID:</strong> {{ user_vps.vps_id }}</p>
+                            <p><strong>计费类型:</strong> {{ user_vps.expire_date }}</p>
+                            <p><strong>已产生费用:</strong> {{ user_vps.cost }}</p>
+                        </div>
+                        <a href="/vps_status/{{ user_vps.vps_id }}" class="button is-primary">管理</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+</body>
+</html>

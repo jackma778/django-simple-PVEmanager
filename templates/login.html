@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://bulma.io/vendor/fontawesome-free-5.15.2-web/css/all.min.css">
+  <link rel="stylesheet" href="https://bulma.io/css/bulma-docs.min.css?v=202403060845">
+</head>
+<title>登录</title>
+<body>
+    <section class="hero is-primary is-fullheight">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns is-centered">
+                    <div class="column is-half">
+                        <div class="box">
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="field">
+                                    <label class="label">用户名</label>
+                                    <div class="control">
+                                        <input class="input" type="text" name="username" placeholder="输入用户名">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="label">密码</label>
+                                    <div class="control">
+                                        <input class="input" type="password" name="password" placeholder="输入密码">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="control">
+                                        <button class="button is-primary is-fullwidth" type="submit">登录</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <p class="has-text-centered">
+                            没有账户？ <a href="/register">注册</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
