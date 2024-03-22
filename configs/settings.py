@@ -7,6 +7,23 @@ YOUR_PVE_SERVER = "172.17.100.100:8006"
 YOUR_PVE_USER = "root@pam"
 YOUR_PVE_PASS = "Sdfa0321"
 
+REDIS_HOST = "127.0.0.1"
+REDIS_DB_URI = f"redis://{REDIS_HOST}:6379/0"
+REDIS_CACHE_URI = f"redis://{REDIS_HOST}:6379/1"
+
+
+CELERY_TIMEZONE = 'Asia/Shanghai'
+CELERY_BROKER_DB = 2
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{6379}/{CELERY_BROKER_DB}"
+
+# Timeout: 所有任务不得超过两分钟
+CELERY_TASK_SOFT_TIME_LIMIT = 60 * 2
+# 任务返回后才会从队列拿走
+CELERY_ACKS_LATE = True
+# 每个worker最多执行1000条任务
+CELERY_MAX_TASKS_PER_CHILD = 1000
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

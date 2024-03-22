@@ -1,17 +1,16 @@
-from django.conf import settings
-from django.http import JsonResponse
-
-from django.shortcuts import render,redirect
-from proxmoxer import ProxmoxAPI
 import requests
 import datetime
+from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render,redirect
 from proxmoxer import ProxmoxAPI
-import requests
-import datetime
 
 
+def get_time():
+    return datetime.datetime.now()
+
+def get_date():
+    return datetime.date.today()
 
 def get_latest_data(vm_id):
     # 连接到 Proxmox VE
@@ -41,7 +40,6 @@ def get_latest_data(vm_id):
     lxc_status['maxmem'] = traffic_format(lxc_status['maxmem'])
     lxc_status['net'] = traffic_format(lxc_status['netin'] + lxc_status['netout'])
     return lxc_status
-
 
 
 def traffic_format(traffic):

@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home</title>
-  <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <link rel="stylesheet" href="https://bulma.io/vendor/fontawesome-free-5.15.2-web/css/all.min.css">
-  <link rel="stylesheet" href="https://bulma.io/css/bulma-docs.min.css?v=202403060845">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
 </head>
-</head>
+<title>Home</title>
 <body>
     <section class="section">
         <div class="container">
@@ -22,14 +18,20 @@
           </li>
             <h2 class="subtitle">你的主机清单:</h2>
             <ul>
-                {% for user_vps in user_vps %}
+                {% for user_vm in user_vm %}
                     <li class="box">
                         <div class="content">
-                            <p><strong>主机 ID:</strong> {{ user_vps.vps_id }}</p>
-                            <p><strong>计费类型:</strong> {{ user_vps.expire_date }}</p>
-                            <p><strong>已产生费用:</strong> {{ user_vps.cost }}</p>
+                            <p><strong>主机 ID:</strong> {{ user_vm.vm_id }} <span style="color: {% if user_vm.get_vm_status %}green{% else %}red{% endif %};">{% if user_vm.get_vm_status %}运行中{% else %}已停止{% endif %}</span></p>
+                            {% if user_vm.check_expire %}
+                            <p><strong>计费类型:</strong>按量计费</p>
+                            <p><strong>价格:</strong>0.2元/小时 关机不扣费</p>
+                            {% else %}
+                            <p><strong>计费类型:</strong>包月</p>
+                            <p><strong>到期日:</strong>{{ user_vm.get_expire_date }}</p>
+                            {% endif %}
+                            <p><strong>已产生费用:</strong> {{ user_vm.cost }}</p>
                         </div>
-                        <a href="/vps_status/{{ user_vps.vps_id }}" class="button is-primary">管理</a>
+                        <a href="/vm_status/{{ user_vm.vm_id }}" class="button is-primary">管理</a>
                     </li>
                 {% endfor %}
             </ul>

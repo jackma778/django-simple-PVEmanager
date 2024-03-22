@@ -8,7 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from .utils import traffic_format, get_latest_data
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login as auth_login
-from .models import User, UserVPS
+from .models import User, Uservm
 from .forms import CustomUserCreationForm
 def index(request):
     return HttpResponse("Hello, world. You're at the index page.")
@@ -38,32 +38,41 @@ def register(request):
 
 def home(request):
     user = request.user
-    user_vps = UserVPS.objects.filter(user_id=user.id)
-    return render(request, 'home.html', {'user_vps': user_vps,  "user": user,})
+    user_vm = Uservm.objects.filter(user_id=user.id)
+    print(f"{user} {user_vm}")
+    return render(request, 'home.html', {'user_vm': user_vm,  "user": user,})
 
 
-def start_vps(request):
-    proxmox = ProxmoxAPI(settings.YOUR_PVE_SERVER, user=settings.YOUR_PVE_USER, password=settings.YOUR_PVE_PASS, verify_ssl=False)
-    vm_id = request.POST.get("vm_id", "")
-    proxmox.nodes("pve").lxc(vm_id).status.start.post()
-    time.sleep(3)
-    return redirect(f'/vps_status/{vm_id}')
-
-
-def stop_vps(request):
-    proxmox = ProxmoxAPI(settings.YOUR_PVE_SERVER, user=settings.YOUR_PVE_USER, password=settings.YOUR_PVE_PASS, verify_ssl=False)
-    vm_id = request.POST.get("vm_id", "")
-    proxmox.nodes("pve").lxc(vm_id).status.stop.post()
-    time.sleep(3)
-    return redirect(f'/vps_status/{vm_id}')
-
-def vps_status(request,vm_id):
-    vps_status = get_latest_data(vm_id)
+def manage_vm(request):
     user = request.user
-    return render(request, 'vps_status.html', {'vps_status': vps_status,  "user": user,})
+    vm_id = request.POST.get("vm_id", "")
+    action = request.POST.get("action", "")
+    try:
+        user_vm = Uservm.objects.get(vm_id=vm_id)
+        if user_vm.manage_vm(action):
+            time.sleep(3)
+            return redirect(f'/vm_status/{vm_id}')
+        else:
+            user_vm = Uservm.objects.filter(user_id=user.id)
+            return render(request, 'home.html', {'user_vm': user_vm,  "user": user,})
+    except Uservm.DoesNotExist:
+        user_vm = Uservm.objects.filter(user_id=user.id)
+        return render(request, 'home.html', {'user_vm': user_vm,  "user": user,})
+
+
+def vm_status(request,vm_id):
+    vm_status = get_latest_data(vm_id)
+    user = request.user
+    try:
+        user_vm = Uservm.objects.get(vm_id=vm_id)
+        user_vm.check_user_permission(user.id)
+        return render(request, 'vm_status.html', {'vm_status': vm_status,  "user": user,})
+    except Uservm.DoesNotExist:
+        user_vm = Uservm.objects.filter(user_id=user.id)
+        return render(request, 'home.html', {'user_vm': user_vm,  "user": user,})
 
 
 def update_data(request):
     vmid = request.GET.get('vmid', None)
-    vps_status = get_latest_data(vmid) 
-    return JsonResponse(vps_status)
+    vm_status = get_latest_data(vmid) 
+    return JsonResponse(vm_status)
